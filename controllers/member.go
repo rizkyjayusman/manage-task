@@ -1,10 +1,12 @@
 package controllers
 
 import (
+	"encoding/base64"
 	"fmt"
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"epc.com/api/constants"
 	"epc.com/api/forms"
@@ -68,7 +70,8 @@ func (m MemberController) Login(c *gin.Context) {
 		return
 	}
 
-	if member.Password != form.Password {
+	encryptedPassword := base64.StdEncoding.EncodeToString([]byte(form.Password))
+	if member.Password != encryptedPassword {
 		c.JSON(400, gin.H{
 			"id":     requestId,
 			"code":   http.StatusBadRequest,
@@ -86,9 +89,9 @@ func (m MemberController) Login(c *gin.Context) {
 		"code":   http.StatusOK,
 		"status": http.StatusText(http.StatusOK),
 		"data": gin.H{
-			"token":       "random_token_here",
-			"role":        constants.RoleStr(constants.ROLE_PM),
-			"expiredDate": "2022-01-01T01:01:01.00z",
+			"token":       base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%v_%v", member.ID, time.Now().UnixMilli()))),
+			"role":        constants.RoleStr(member.Role),
+			"expiredDate": time.Now().AddDate(0, 0, 7),
 		},
 	})
 }

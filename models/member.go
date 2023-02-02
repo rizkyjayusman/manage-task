@@ -12,6 +12,10 @@ type Member struct {
 	Status         int    `json:"status"`
 }
 
+func (Member) TableName() string {
+	return "t_members"
+}
+
 func (m Member) Login() bool {
 	return false
 	// return true
